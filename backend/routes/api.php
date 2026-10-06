@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HousingUnitController;
 use App\Http\Controllers\MaintenanceTicketController;
+use App\Http\Controllers\PlacementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,4 +16,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('housing-units', HousingUnitController::class);
     Route::apiResource('maintenance-tickets', MaintenanceTicketController::class);
+    Route::apiResource('placements', PlacementController::class);
 });
