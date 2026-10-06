@@ -3,38 +3,40 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
 
-interface HousingUnit {
-  id: number
-  unit_number: string
-}
-
 interface User {
   id: number
   name: string
 }
 
-interface MaintenanceTicket {
+interface HousingUnit {
   id: number
-  housing_unit_id: number
-  description: string
-  urgency: string
+  unit_number: string
+  capacity: number
   status: string
-  housing_unit?: HousingUnit
+}
+
+interface Placement {
+  id: number
+  user_id: number
+  housing_unit_id: number
+  check_in_date: string
+  check_out_date: string | null
   user?: User
+  housing_unit?: HousingUnit
 }
 
 const router = useRouter()
 
-const tickets = ref<MaintenanceTicket[]>([])
+const placements = ref<Placement[]>([])
 const isLoading = ref(false)
 const isSubmitting = ref(false)
 const editingId = ref<number | null>(null)
 
 const form = ref({
+  user_id: '' as number | string,
   housing_unit_id: '' as number | string,
-  description: '',
-  urgency: 'low',
-  status: 'open',
+  check_in_date: '',
+  check_out_date: '',
 })
 
 const toast = ref<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -52,22 +54,26 @@ function showToast(type: 'success' | 'error', message: string) {
   }, 3000)
 }
 
-function urgencyClass(urgency: string) {
-  return `badge badge-${urgency}`
-}
-
 function statusClass(status: string) {
-  return `badge status-${status}`
+  return `badge badge-${status}`
 }
 
-async function fetchTickets() {
+function formatDate(value: string | null) {
+  if (!value) {
+    return '-'
+  }
+
+  return value.slice(0, 10)
+}
+
+async function fetchPlacements() {
   isLoading.value = true
 
   try {
-    const { data } = await api.get('/maintenance-tickets')
-    tickets.value = data.data
+    const { data } = await api.get('/placements')
+    placements.value = data.data
   } catch {
-    showToast('error', 'Gagal memuat daftar tiket.')
+    showToast('error', 'Gagal memuat daftar penugasan.')
   } finally {
     isLoading.value = false
   }
@@ -75,43 +81,43 @@ async function fetchTickets() {
 
 function resetForm() {
   form.value = {
+    user_id: '',
     housing_unit_id: '',
-    description: '',
-    urgency: 'low',
-    status: 'open',
+    check_in_date: '',
+    check_out_date: '',
   }
 
   editingId.value = null
 }
 
-function handleEdit(ticket: MaintenanceTicket) {
-  editingId.value = ticket.id
+function handleEdit(placement: Placement) {
+  editingId.value = placement.id
   form.value = {
-    housing_unit_id: ticket.housing_unit_id,
-    description: ticket.description,
-    urgency: ticket.urgency,
-    status: ticket.status,
+    user_id: placement.user_id,
+    housing_unit_id: placement.housing_unit_id,
+    check_in_date: placement.check_in_date ? placement.check_in_date.slice(0, 10) : '',
+    check_out_date: placement.check_out_date ? placement.check_out_date.slice(0, 10) : '',
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-async function handleDelete(ticket: MaintenanceTicket) {
-  if (!window.confirm(`Hapus tiket #${ticket.id}?`)) {
+async function handleDelete(placement: Placement) {
+  if (!window.confirm(`Hapus penugasan #${placement.id}?`)) {
     return
   }
 
   try {
-    await api.delete(`/maintenance-tickets/${ticket.id}`)
+    await api.delete(`/placements/${placement.id}`)
 
-    if (editingId.value === ticket.id) {
+    if (editingId.value === placement.id) {
       resetForm()
     }
 
-    showToast('success', 'Tiket pemeliharaan berhasil dihapus.')
-    await fetchTickets()
+    showToast('success', 'Penugasan berhasil dihapus.')
+    await fetchPlacements()
   } catch {
-    showToast('error', 'Gagal menghapus tiket. Silakan coba lagi.')
+    showToast('error', 'Gagal menghapus penugasan. Silakan coba lagi.')
   }
 }
 
@@ -119,30 +125,30 @@ async function handleSubmit() {
   isSubmitting.value = true
 
   const payload = {
+    user_id: Number(form.value.user_id),
     housing_unit_id: Number(form.value.housing_unit_id),
-    description: form.value.description,
-    urgency: form.value.urgency,
-    status: form.value.status,
+    check_in_date: form.value.check_in_date,
+    check_out_date: form.value.check_out_date || null,
   }
 
   try {
     if (editingId.value !== null) {
-      await api.put(`/maintenance-tickets/${editingId.value}`, payload)
-      showToast('success', 'Tiket pemeliharaan berhasil diperbarui.')
+      await api.put(`/placements/${editingId.value}`, payload)
+      showToast('success', 'Penugasan berhasil diperbarui.')
     } else {
-      await api.post('/maintenance-tickets', payload)
-      showToast('success', 'Tiket pemeliharaan berhasil dibuat.')
+      await api.post('/placements', payload)
+      showToast('success', 'Penugasan berhasil dibuat.')
     }
 
     resetForm()
-    await fetchTickets()
+    await fetchPlacements()
   } catch (error: any) {
     if (error.response?.status === 422) {
       showToast('error', 'Data tidak valid. Periksa kembali input Anda.')
     } else if (editingId.value !== null) {
-      showToast('error', 'Gagal memperbarui tiket. Silakan coba lagi.')
+      showToast('error', 'Gagal memperbarui penugasan. Silakan coba lagi.')
     } else {
-      showToast('error', 'Gagal membuat tiket. Silakan coba lagi.')
+      showToast('error', 'Gagal membuat penugasan. Silakan coba lagi.')
     }
   } finally {
     isSubmitting.value = false
@@ -154,21 +160,19 @@ function handleLogout() {
   router.push({ name: 'login' })
 }
 
-onMounted(fetchTickets)
+onMounted(fetchPlacements)
 </script>
 
 <template>
-  <div class="maintenance-page">
+  <div class="placement-page">
     <nav class="navbar">
       <RouterLink class="nav-link" :to="{ name: 'housing-units' }">Unit Hunian</RouterLink>
-      <RouterLink class="nav-link active" :to="{ name: 'maintenance' }"
-        >Tiket Pemeliharaan</RouterLink
-      >
-      <RouterLink class="nav-link" :to="{ name: 'placements' }">Penugasan</RouterLink>
+      <RouterLink class="nav-link" :to="{ name: 'maintenance' }">Tiket Pemeliharaan</RouterLink>
+      <RouterLink class="nav-link active" :to="{ name: 'placements' }">Penugasan</RouterLink>
     </nav>
 
     <header class="page-header">
-      <h1>Tiket Pemeliharaan</h1>
+      <h1>Penugasan Pegawai</h1>
       <button class="logout-button" @click="handleLogout">Logout</button>
     </header>
 
@@ -178,8 +182,18 @@ onMounted(fetchTickets)
       </div>
     </Transition>
 
-    <form class="ticket-form" @submit.prevent="handleSubmit">
-      <h2>{{ editingId !== null ? `Edit Tiket #${editingId}` : 'Buat Tiket Baru' }}</h2>
+    <form class="placement-form" @submit.prevent="handleSubmit">
+      <h2>{{ editingId !== null ? `Edit Penugasan #${editingId}` : 'Buat Penugasan Baru' }}</h2>
+
+      <label for="user_id">ID Pegawai</label>
+      <input
+        id="user_id"
+        v-model="form.user_id"
+        type="number"
+        min="1"
+        placeholder="Contoh: 1"
+        required
+      />
 
       <label for="housing_unit_id">ID Unit Hunian</label>
       <input
@@ -191,31 +205,14 @@ onMounted(fetchTickets)
         required
       />
 
-      <label for="description">Deskripsi</label>
-      <textarea
-        id="description"
-        v-model="form.description"
-        rows="3"
-        placeholder="Jelaskan kerusakan atau keluhan..."
-        required
-      ></textarea>
+      <label for="check_in_date">Tanggal Check-in</label>
+      <input id="check_in_date" v-model="form.check_in_date" type="date" required />
 
-      <label for="urgency">Urgensi</label>
-      <select id="urgency" v-model="form.urgency" required>
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
-
-      <label for="status">Status</label>
-      <select id="status" v-model="form.status" required>
-        <option value="open">Open</option>
-        <option value="in_progress">In Progress</option>
-        <option value="resolved">Resolved</option>
-      </select>
+      <label for="check_out_date">Tanggal Check-out</label>
+      <input id="check_out_date" v-model="form.check_out_date" type="date" />
 
       <button type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? 'Menyimpan...' : editingId !== null ? 'Perbarui Tiket' : 'Kirim Tiket' }}
+        {{ isSubmitting ? 'Menyimpan...' : editingId !== null ? 'Perbarui Penugasan' : 'Kirim Penugasan' }}
       </button>
 
       <button v-if="editingId !== null" type="button" class="cancel-button" @click="resetForm">
@@ -223,39 +220,43 @@ onMounted(fetchTickets)
       </button>
     </form>
 
-    <h2 class="list-title">Daftar Tiket</h2>
+    <h2 class="list-title">Daftar Penugasan</h2>
 
     <p v-if="isLoading">Memuat data...</p>
-    <p v-else-if="tickets.length === 0">Belum ada tiket pemeliharaan.</p>
+    <p v-else-if="placements.length === 0">Belum ada penugasan.</p>
 
-    <table v-else class="ticket-table">
+    <table v-else class="placement-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Unit</th>
-          <th>Pelapor</th>
-          <th>Deskripsi</th>
-          <th>Urgensi</th>
-          <th>Status</th>
+          <th>Pegawai</th>
+          <th>Unit Hunian</th>
+          <th>Check-in</th>
+          <th>Check-out</th>
           <th>Aksi</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(ticket, index) in tickets" :key="ticket.id">
+        <tr v-for="(placement, index) in placements" :key="placement.id">
           <td>{{ index + 1 }}</td>
-          <td>{{ ticket.housing_unit?.unit_number ?? ticket.housing_unit_id }}</td>
-          <td>{{ ticket.user?.name ?? '-' }}</td>
-          <td>{{ ticket.description }}</td>
+          <td>{{ placement.user?.name ?? placement.user_id }}</td>
           <td>
-            <span :class="urgencyClass(ticket.urgency)">{{ ticket.urgency }}</span>
+            <span>{{ placement.housing_unit?.unit_number ?? placement.housing_unit_id }}</span>
+            <span
+              v-if="placement.housing_unit"
+              :class="statusClass(placement.housing_unit.status)"
+            >
+              {{ placement.housing_unit.status }}
+            </span>
           </td>
-          <td>
-            <span :class="statusClass(ticket.status)">{{ ticket.status }}</span>
-          </td>
+          <td>{{ formatDate(placement.check_in_date) }}</td>
+          <td>{{ formatDate(placement.check_out_date) }}</td>
           <td>
             <div class="action-buttons">
-              <button type="button" class="edit-button" @click="handleEdit(ticket)">Edit</button>
-              <button type="button" class="delete-button" @click="handleDelete(ticket)">
+              <button type="button" class="edit-button" @click="handleEdit(placement)">
+                Edit
+              </button>
+              <button type="button" class="delete-button" @click="handleDelete(placement)">
                 Hapus
               </button>
             </div>
@@ -267,7 +268,7 @@ onMounted(fetchTickets)
 </template>
 
 <style scoped>
-.maintenance-page {
+.placement-page {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem 1rem;
@@ -320,7 +321,7 @@ h1 {
   cursor: pointer;
 }
 
-.ticket-form {
+.placement-form {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -331,7 +332,7 @@ h1 {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
-.ticket-form h2 {
+.placement-form h2 {
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
 }
@@ -342,9 +343,7 @@ label {
   color: #334155;
 }
 
-input,
-textarea,
-select {
+input {
   padding: 0.6rem 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -352,14 +351,12 @@ select {
   font-family: inherit;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
+input:focus {
   outline: 2px solid #3b82f6;
   border-color: transparent;
 }
 
-.ticket-form button {
+.placement-form button {
   margin-top: 0.75rem;
   padding: 0.65rem;
   border: none;
@@ -371,7 +368,7 @@ select:focus {
   cursor: pointer;
 }
 
-.ticket-form button:disabled {
+.placement-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -405,7 +402,7 @@ select:focus {
   color: #ffffff;
 }
 
-.ticket-table {
+.placement-table {
   width: 100%;
   border-collapse: collapse;
   background: #ffffff;
@@ -414,15 +411,14 @@ select:focus {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
-.ticket-table th,
-.ticket-table td {
+.placement-table th,
+.placement-table td {
   padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
-  vertical-align: top;
 }
 
-.ticket-table th {
+.placement-table th {
   background: #f8fafc;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -431,6 +427,7 @@ select:focus {
 
 .badge {
   display: inline-block;
+  margin-left: 0.5rem;
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
   font-size: 0.78rem;
@@ -439,34 +436,19 @@ select:focus {
   white-space: nowrap;
 }
 
-.badge-low {
+.badge-available {
   background: #dcfce7;
   color: #166534;
 }
 
-.badge-medium {
+.badge-occupied {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-maintenance {
   background: #fef3c7;
   color: #92400e;
-}
-
-.badge-high {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-open {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-in_progress {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-resolved {
-  background: #dcfce7;
-  color: #166534;
 }
 
 .toast {

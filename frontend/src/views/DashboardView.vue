@@ -45,8 +45,9 @@ onMounted(fetchHousingUnits)
 <template>
   <div class="dashboard-page">
     <nav class="navbar">
-      <RouterLink class="nav-link active" :to="{ name: 'dashboard' }">Unit Hunian</RouterLink>
+      <RouterLink class="nav-link active" :to="{ name: 'housing-units' }">Unit Hunian</RouterLink>
       <RouterLink class="nav-link" :to="{ name: 'maintenance' }">Tiket Pemeliharaan</RouterLink>
+      <RouterLink class="nav-link" :to="{ name: 'placements' }">Penugasan</RouterLink>
     </nav>
 
     <header class="dashboard-header">

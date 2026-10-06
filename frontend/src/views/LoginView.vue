@@ -22,7 +22,7 @@ async function handleSubmit() {
 
     localStorage.setItem('token', data.access_token)
 
-    router.push({ name: 'dashboard' })
+    router.push({ name: 'housing-units' })
   } catch (error: any) {
     if (error.response?.status === 401) {
       errorMessage.value = 'Email atau password salah.'

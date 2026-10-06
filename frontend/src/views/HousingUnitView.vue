@@ -6,35 +6,21 @@ import api from '@/services/api'
 interface HousingUnit {
   id: number
   unit_number: string
-}
-
-interface User {
-  id: number
-  name: string
-}
-
-interface MaintenanceTicket {
-  id: number
-  housing_unit_id: number
-  description: string
-  urgency: string
+  capacity: number
   status: string
-  housing_unit?: HousingUnit
-  user?: User
 }
 
 const router = useRouter()
 
-const tickets = ref<MaintenanceTicket[]>([])
+const housingUnits = ref<HousingUnit[]>([])
 const isLoading = ref(false)
 const isSubmitting = ref(false)
 const editingId = ref<number | null>(null)
 
 const form = ref({
-  housing_unit_id: '' as number | string,
-  description: '',
-  urgency: 'low',
-  status: 'open',
+  unit_number: '',
+  capacity: '' as number | string,
+  status: 'available',
 })
 
 const toast = ref<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -52,22 +38,18 @@ function showToast(type: 'success' | 'error', message: string) {
   }, 3000)
 }
 
-function urgencyClass(urgency: string) {
-  return `badge badge-${urgency}`
-}
-
 function statusClass(status: string) {
-  return `badge status-${status}`
+  return `badge badge-${status}`
 }
 
-async function fetchTickets() {
+async function fetchHousingUnits() {
   isLoading.value = true
 
   try {
-    const { data } = await api.get('/maintenance-tickets')
-    tickets.value = data.data
+    const { data } = await api.get('/housing-units')
+    housingUnits.value = data.data
   } catch {
-    showToast('error', 'Gagal memuat daftar tiket.')
+    showToast('error', 'Gagal memuat daftar unit hunian.')
   } finally {
     isLoading.value = false
   }
@@ -75,43 +57,41 @@ async function fetchTickets() {
 
 function resetForm() {
   form.value = {
-    housing_unit_id: '',
-    description: '',
-    urgency: 'low',
-    status: 'open',
+    unit_number: '',
+    capacity: '',
+    status: 'available',
   }
 
   editingId.value = null
 }
 
-function handleEdit(ticket: MaintenanceTicket) {
-  editingId.value = ticket.id
+function handleEdit(unit: HousingUnit) {
+  editingId.value = unit.id
   form.value = {
-    housing_unit_id: ticket.housing_unit_id,
-    description: ticket.description,
-    urgency: ticket.urgency,
-    status: ticket.status,
+    unit_number: unit.unit_number,
+    capacity: unit.capacity,
+    status: unit.status,
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-async function handleDelete(ticket: MaintenanceTicket) {
-  if (!window.confirm(`Hapus tiket #${ticket.id}?`)) {
+async function handleDelete(unit: HousingUnit) {
+  if (!window.confirm(`Hapus unit ${unit.unit_number}?`)) {
     return
   }
 
   try {
-    await api.delete(`/maintenance-tickets/${ticket.id}`)
+    await api.delete(`/housing-units/${unit.id}`)
 
-    if (editingId.value === ticket.id) {
+    if (editingId.value === unit.id) {
       resetForm()
     }
 
-    showToast('success', 'Tiket pemeliharaan berhasil dihapus.')
-    await fetchTickets()
+    showToast('success', 'Unit hunian berhasil dihapus.')
+    await fetchHousingUnits()
   } catch {
-    showToast('error', 'Gagal menghapus tiket. Silakan coba lagi.')
+    showToast('error', 'Gagal menghapus unit hunian. Silakan coba lagi.')
   }
 }
 
@@ -119,30 +99,29 @@ async function handleSubmit() {
   isSubmitting.value = true
 
   const payload = {
-    housing_unit_id: Number(form.value.housing_unit_id),
-    description: form.value.description,
-    urgency: form.value.urgency,
+    unit_number: form.value.unit_number,
+    capacity: Number(form.value.capacity),
     status: form.value.status,
   }
 
   try {
     if (editingId.value !== null) {
-      await api.put(`/maintenance-tickets/${editingId.value}`, payload)
-      showToast('success', 'Tiket pemeliharaan berhasil diperbarui.')
+      await api.put(`/housing-units/${editingId.value}`, payload)
+      showToast('success', 'Unit hunian berhasil diperbarui.')
     } else {
-      await api.post('/maintenance-tickets', payload)
-      showToast('success', 'Tiket pemeliharaan berhasil dibuat.')
+      await api.post('/housing-units', payload)
+      showToast('success', 'Unit hunian berhasil dibuat.')
     }
 
     resetForm()
-    await fetchTickets()
+    await fetchHousingUnits()
   } catch (error: any) {
     if (error.response?.status === 422) {
       showToast('error', 'Data tidak valid. Periksa kembali input Anda.')
     } else if (editingId.value !== null) {
-      showToast('error', 'Gagal memperbarui tiket. Silakan coba lagi.')
+      showToast('error', 'Gagal memperbarui unit hunian. Silakan coba lagi.')
     } else {
-      showToast('error', 'Gagal membuat tiket. Silakan coba lagi.')
+      showToast('error', 'Gagal membuat unit hunian. Silakan coba lagi.')
     }
   } finally {
     isSubmitting.value = false
@@ -154,21 +133,19 @@ function handleLogout() {
   router.push({ name: 'login' })
 }
 
-onMounted(fetchTickets)
+onMounted(fetchHousingUnits)
 </script>
 
 <template>
-  <div class="maintenance-page">
+  <div class="housing-page">
     <nav class="navbar">
-      <RouterLink class="nav-link" :to="{ name: 'housing-units' }">Unit Hunian</RouterLink>
-      <RouterLink class="nav-link active" :to="{ name: 'maintenance' }"
-        >Tiket Pemeliharaan</RouterLink
-      >
+      <RouterLink class="nav-link active" :to="{ name: 'housing-units' }">Unit Hunian</RouterLink>
+      <RouterLink class="nav-link" :to="{ name: 'maintenance' }">Tiket Pemeliharaan</RouterLink>
       <RouterLink class="nav-link" :to="{ name: 'placements' }">Penugasan</RouterLink>
     </nav>
 
     <header class="page-header">
-      <h1>Tiket Pemeliharaan</h1>
+      <h1>Manajemen Unit Hunian</h1>
       <button class="logout-button" @click="handleLogout">Logout</button>
     </header>
 
@@ -178,44 +155,37 @@ onMounted(fetchTickets)
       </div>
     </Transition>
 
-    <form class="ticket-form" @submit.prevent="handleSubmit">
-      <h2>{{ editingId !== null ? `Edit Tiket #${editingId}` : 'Buat Tiket Baru' }}</h2>
+    <form class="unit-form" @submit.prevent="handleSubmit">
+      <h2>{{ editingId !== null ? `Edit Unit #${editingId}` : 'Tambah Unit Baru' }}</h2>
 
-      <label for="housing_unit_id">ID Unit Hunian</label>
+      <label for="unit_number">Nomor Unit</label>
       <input
-        id="housing_unit_id"
-        v-model="form.housing_unit_id"
-        type="number"
-        min="1"
-        placeholder="Contoh: 1"
+        id="unit_number"
+        v-model="form.unit_number"
+        type="text"
+        placeholder="Contoh: A-101"
         required
       />
 
-      <label for="description">Deskripsi</label>
-      <textarea
-        id="description"
-        v-model="form.description"
-        rows="3"
-        placeholder="Jelaskan kerusakan atau keluhan..."
+      <label for="capacity">Kapasitas</label>
+      <input
+        id="capacity"
+        v-model="form.capacity"
+        type="number"
+        min="1"
+        placeholder="Contoh: 4"
         required
-      ></textarea>
-
-      <label for="urgency">Urgensi</label>
-      <select id="urgency" v-model="form.urgency" required>
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
+      />
 
       <label for="status">Status</label>
       <select id="status" v-model="form.status" required>
-        <option value="open">Open</option>
-        <option value="in_progress">In Progress</option>
-        <option value="resolved">Resolved</option>
+        <option value="available">Available</option>
+        <option value="occupied">Occupied</option>
+        <option value="maintenance">Maintenance</option>
       </select>
 
       <button type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? 'Menyimpan...' : editingId !== null ? 'Perbarui Tiket' : 'Kirim Tiket' }}
+        {{ isSubmitting ? 'Menyimpan...' : editingId !== null ? 'Perbarui Unit' : 'Simpan Unit' }}
       </button>
 
       <button v-if="editingId !== null" type="button" class="cancel-button" @click="resetForm">
@@ -223,41 +193,33 @@ onMounted(fetchTickets)
       </button>
     </form>
 
-    <h2 class="list-title">Daftar Tiket</h2>
+    <h2 class="list-title">Daftar Unit Hunian</h2>
 
     <p v-if="isLoading">Memuat data...</p>
-    <p v-else-if="tickets.length === 0">Belum ada tiket pemeliharaan.</p>
+    <p v-else-if="housingUnits.length === 0">Belum ada unit hunian.</p>
 
-    <table v-else class="ticket-table">
+    <table v-else class="unit-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Unit</th>
-          <th>Pelapor</th>
-          <th>Deskripsi</th>
-          <th>Urgensi</th>
+          <th>Nomor Unit</th>
+          <th>Kapasitas</th>
           <th>Status</th>
           <th>Aksi</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(ticket, index) in tickets" :key="ticket.id">
+        <tr v-for="(unit, index) in housingUnits" :key="unit.id">
           <td>{{ index + 1 }}</td>
-          <td>{{ ticket.housing_unit?.unit_number ?? ticket.housing_unit_id }}</td>
-          <td>{{ ticket.user?.name ?? '-' }}</td>
-          <td>{{ ticket.description }}</td>
+          <td>{{ unit.unit_number }}</td>
+          <td>{{ unit.capacity }}</td>
           <td>
-            <span :class="urgencyClass(ticket.urgency)">{{ ticket.urgency }}</span>
-          </td>
-          <td>
-            <span :class="statusClass(ticket.status)">{{ ticket.status }}</span>
+            <span :class="statusClass(unit.status)">{{ unit.status }}</span>
           </td>
           <td>
             <div class="action-buttons">
-              <button type="button" class="edit-button" @click="handleEdit(ticket)">Edit</button>
-              <button type="button" class="delete-button" @click="handleDelete(ticket)">
-                Hapus
-              </button>
+              <button type="button" class="edit-button" @click="handleEdit(unit)">Edit</button>
+              <button type="button" class="delete-button" @click="handleDelete(unit)">Hapus</button>
             </div>
           </td>
         </tr>
@@ -267,7 +229,7 @@ onMounted(fetchTickets)
 </template>
 
 <style scoped>
-.maintenance-page {
+.housing-page {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem 1rem;
@@ -320,7 +282,7 @@ h1 {
   cursor: pointer;
 }
 
-.ticket-form {
+.unit-form {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -331,7 +293,7 @@ h1 {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
-.ticket-form h2 {
+.unit-form h2 {
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
 }
@@ -343,7 +305,6 @@ label {
 }
 
 input,
-textarea,
 select {
   padding: 0.6rem 0.75rem;
   border: 1px solid #cbd5e1;
@@ -353,13 +314,12 @@ select {
 }
 
 input:focus,
-textarea:focus,
 select:focus {
   outline: 2px solid #3b82f6;
   border-color: transparent;
 }
 
-.ticket-form button {
+.unit-form button {
   margin-top: 0.75rem;
   padding: 0.65rem;
   border: none;
@@ -371,7 +331,7 @@ select:focus {
   cursor: pointer;
 }
 
-.ticket-form button:disabled {
+.unit-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -405,7 +365,7 @@ select:focus {
   color: #ffffff;
 }
 
-.ticket-table {
+.unit-table {
   width: 100%;
   border-collapse: collapse;
   background: #ffffff;
@@ -414,15 +374,14 @@ select:focus {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
-.ticket-table th,
-.ticket-table td {
+.unit-table th,
+.unit-table td {
   padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
-  vertical-align: top;
 }
 
-.ticket-table th {
+.unit-table th {
   background: #f8fafc;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -436,37 +395,21 @@ select:focus {
   font-size: 0.78rem;
   font-weight: 600;
   text-transform: capitalize;
-  white-space: nowrap;
 }
 
-.badge-low {
+.badge-available {
   background: #dcfce7;
   color: #166534;
 }
 
-.badge-medium {
+.badge-occupied {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-maintenance {
   background: #fef3c7;
   color: #92400e;
-}
-
-.badge-high {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-open {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-in_progress {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-resolved {
-  background: #dcfce7;
-  color: #166534;
 }
 
 .toast {
