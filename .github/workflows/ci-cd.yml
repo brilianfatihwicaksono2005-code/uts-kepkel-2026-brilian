@@ -51,9 +51,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5 # (Versi mungkin berbeda, biarkan saja)
         with:
-          context: .
+          context: ./backend             # Ubah context ke folder backend
+          file: ./backend/Dockerfile     # Tunjuk spesifik file Dockerfile-nya
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/uts-kepkel-2026-brilian:latest
+          tags: ghcr.io/${{ github.repository }}:latest
+          # (biarkan opsi lain jika ada)
