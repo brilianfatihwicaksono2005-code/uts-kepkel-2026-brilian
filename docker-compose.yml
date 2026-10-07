@@ -1,7 +1,7 @@
 services:
   # 1. Container Database (MySQL)
   db:
-    image: mysql:8.0
+    image: mysql:8.0.44
     container_name: uts_db
     restart: unless-stopped
     environment:
