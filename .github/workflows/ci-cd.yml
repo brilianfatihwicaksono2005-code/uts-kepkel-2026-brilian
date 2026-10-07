@@ -1,0 +1,59 @@
+name: CI/CD Pipeline UTS
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # JOB 1: CI Backend (Sesuai syarat rubrik)
+  ci-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+  # JOB 2: CI Frontend (Sesuai syarat rubrik)
+  ci-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm install
+
+  # JOB 3: Deploy ke GitHub Container Registry (GHCR)
+  deploy-ghcr:
+    needs: [ci-backend, ci-frontend] 
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' # Hanya deploy jika kode masuk ke main
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/uts-kepkel-2026-brilian:latest
