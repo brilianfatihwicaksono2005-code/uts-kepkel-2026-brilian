@@ -1,0 +1,49 @@
+services:
+  # 1. Container Database (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: uts_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: uts_kepkel
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 2. Container Backend (Laravel + FrankenPHP)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: uts_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=mysql
+      - DB_HOST=db      # Menghubungkan backend ke container database ('db')
+      - DB_PORT=3306
+      - DB_DATABASE=uts_kepkel
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - db
+
+  # 3. Container Frontend (Vue.js + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: uts_frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"       # Frontend bisa diakses melalui http://localhost:8080
+    depends_on:
+      - backend
+
+volumes:
+  db_data: # Menyimpan data database secara permanen (persistent)
