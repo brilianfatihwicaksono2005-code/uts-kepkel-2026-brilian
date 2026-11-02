@@ -12,6 +12,8 @@ FROM dunglas/frankenphp:php8.3
 WORKDIR /app
 # Install ekstensi PHP yang dibutuhkan Laravel (MySQL driver)
 RUN install-php-extensions pdo_mysql
+# Install curl untuk Docker healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 # Menyalin file aplikasi dan vendor dari STAGE 1
 COPY --from=builder /app /app
 

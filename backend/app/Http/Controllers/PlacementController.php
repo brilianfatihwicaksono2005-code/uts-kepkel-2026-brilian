@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Placement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PlacementController extends Controller
 {
@@ -35,6 +36,12 @@ class PlacementController extends Controller
 
         $placement = Placement::create($validated);
 
+        Log::info('Placement berhasil dibuat', [
+            'user_id' => auth()->id(),
+            'action' => 'create_placement',
+            'data' => $placement->toArray(),
+        ]);
+
         return response()->json([
             'message' => 'Penempatan hunian berhasil dibuat.',
             'data' => $placement->load(['user', 'housingUnit']),
@@ -49,6 +56,12 @@ class PlacementController extends Controller
         $placement = Placement::with(['user', 'housingUnit'])->find($id);
 
         if (! $placement) {
+            Log::warning('Placement tidak ditemukan', [
+                'user_id' => auth()->id(),
+                'action' => 'show_placement',
+                'reason' => "Placement dengan id {$id} tidak ditemukan",
+            ]);
+
             return response()->json([
                 'message' => 'Penempatan hunian tidak ditemukan.',
             ], 404);
