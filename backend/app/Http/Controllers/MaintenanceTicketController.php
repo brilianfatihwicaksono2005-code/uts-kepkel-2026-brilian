@@ -6,6 +6,7 @@ use App\Models\MaintenanceTicket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class MaintenanceTicketController extends Controller
@@ -39,6 +40,12 @@ class MaintenanceTicketController extends Controller
 
         $ticket = MaintenanceTicket::create($validated);
 
+        Log::info('Maintenance ticket berhasil dibuat', [
+            'user_id' => Auth::id(),
+            'action' => 'create_maintenance_ticket',
+            'data' => $ticket->toArray(),
+        ]);
+
         return response()->json([
             'message' => 'Tiket maintenance berhasil dibuat.',
             'data' => $ticket->load(['housingUnit', 'user']),
@@ -53,6 +60,12 @@ class MaintenanceTicketController extends Controller
         $ticket = MaintenanceTicket::with(['housingUnit', 'user'])->find($id);
 
         if (! $ticket) {
+            Log::warning('Maintenance ticket tidak ditemukan', [
+                'user_id' => Auth::id(),
+                'action' => 'show_maintenance_ticket',
+                'reason' => "Maintenance ticket dengan id {$id} tidak ditemukan",
+            ]);
+
             return response()->json([
                 'message' => 'Tiket maintenance tidak ditemukan.',
             ], 404);

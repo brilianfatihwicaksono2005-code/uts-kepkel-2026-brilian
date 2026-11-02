@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HousingUnit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class HousingUnitController extends Controller
@@ -35,6 +36,12 @@ class HousingUnitController extends Controller
 
         $housingUnit = HousingUnit::create($validated);
 
+        Log::info('Housing unit berhasil dibuat', [
+            'user_id' => auth()->id(),
+            'action' => 'create_housing_unit',
+            'data' => $housingUnit->toArray(),
+        ]);
+
         return response()->json([
             'message' => 'Unit hunian berhasil dibuat.',
             'data' => $housingUnit,
@@ -49,6 +56,12 @@ class HousingUnitController extends Controller
         $housingUnit = HousingUnit::find($id);
 
         if (! $housingUnit) {
+            Log::warning('Housing unit tidak ditemukan', [
+                'user_id' => auth()->id(),
+                'action' => 'show_housing_unit',
+                'reason' => "Housing unit dengan id {$id} tidak ditemukan",
+            ]);
+
             return response()->json([
                 'message' => 'Unit hunian tidak ditemukan.',
             ], 404);
@@ -101,6 +114,12 @@ class HousingUnitController extends Controller
         }
 
         $housingUnit->delete();
+
+        Log::info('Housing unit berhasil dihapus', [
+            'user_id' => auth()->id(),
+            'action' => 'delete_housing_unit',
+            'data' => ['id' => $id, 'unit_number' => $housingUnit->unit_number],
+        ]);
 
         return response()->json([
             'message' => 'Unit hunian berhasil dihapus.',

@@ -91,3 +91,10 @@ docker pull ghcr.io/brilianfatihwicaksono2005-code/uts-kepkel-2026-brilian:lates
 ## Catatan
 
 Dokumentasi ini dibuat untuk mempermudah pengelolaan, deployment, dan evaluasi proyek UTS secara konsisten di lingkungan lokal maupun CI/CD.
+
+## 🚀 Fitur Baru (Tugas Log & Healthcheck)
+
+- **Endpoint Kesehatan (`/health`)**: Menambahkan endpoint `GET /health` tanpa autentikasi yang mengecek koneksi database (`PDO`) dan cache secara independen (membalas 200 OK jika sehat, 503 jika gagal).
+- **Log Terstruktur**: Mengubah channel log ke `stderr` dan mengimplementasikan log terstruktur berkonteks (siapa, apa, datanya) menggunakan `Log::info` dan `Log::warning` pada controller.
+- **Docker Healthcheck**: Menambahkan konfigurasi `healthcheck` pada service `backend` di `docker-compose.yml` untuk mengecek endpoint `/health` secara berkala.
+- **Limitasi Ukuran Log**: Menerapkan batasan ukuran log container Docker dengan opsi `max-size: "10m"` dan `max-file: "3"`.
