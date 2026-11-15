@@ -8,10 +8,10 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # STAGE 2: Production menggunakan FrankenPHP (Menjawab Poin Bonus +10)
-FROM dunglas/frankenphp:php8.3
+FROM dunglas/frankenphp:php8.3-bookworm
 WORKDIR /app
 # Install ekstensi PHP yang dibutuhkan Laravel (MySQL driver)
-RUN install-php-extensions pdo_mysql
+RUN install-php-extensions pdo_mysql redis
 # Install curl untuk Docker healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 # Menyalin file aplikasi dan vendor dari STAGE 1
