@@ -1,0 +1,11 @@
+groups:
+  - name: aplikasi-hunian
+    rules:
+      - alert: LayananMati
+        expr: up{job="aplikasi"} == 0
+        for: 1m
+        labels:
+          severity: kritis
+        annotations:
+          summary: "Aplikasi Hunian Pegawai tidak bisa ditarik oleh Prometheus."
+          action: "Jalankan `docker compose ps`, lalu `docker compose logs backend` untuk memeriksa penyebab container berhenti."

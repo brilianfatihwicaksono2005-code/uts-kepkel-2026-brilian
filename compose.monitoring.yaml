@@ -1,0 +1,88 @@
+services:
+  backend:
+    environment:
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: "null"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7.4.4-alpine
+    container_name: uts_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: uts_prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prom-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: uts_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASS:?isi GRAFANA_PASS di .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: uts_cadvisor
+    restart: unless-stopped
+    privileged: true
+    cgroup: host
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /dev/disk/:/dev/disk:ro
+    command:
+      - --docker_only=true
+      - --raw_cgroup_prefix_whitelist=/docker
+
+  docker-exporter:
+    image: node:20.15.1-alpine
+    container_name: uts_docker_exporter
+    restart: unless-stopped
+    command: ["node", "/app/server.js"]
+    volumes:
+      - ./monitoring/exporter/server.js:/app/server.js:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    expose:
+      - "9101"
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: uts_node_exporter
+    restart: unless-stopped
+    pid: host
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro
+
+volumes:
+  prom-data:
+  grafana-data:
+  redis-data:
