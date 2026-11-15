@@ -1,0 +1,9 @@
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
+.playwright/
+
+# OpenCode local config
+opencode.json
+
+# Compose secrets
+.env
