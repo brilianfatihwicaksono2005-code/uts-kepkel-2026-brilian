@@ -1,0 +1,10 @@
+﻿# 2026-11-15 22:56:22
+/uts_prometheus => prom/prometheus:v2.53.0
+/uts_grafana => grafana/grafana:11.1.0
+/uts_cadvisor => gcr.io/cadvisor/cadvisor:v0.49.1
+/uts_node_exporter => prom/node-exporter:v1.8.1
+/uts_redis => redis:7.4.4-alpine
+/uts_docker_exporter => node:20.15.1-alpine
+/uts_backend => uts-kepl-2026-brilian-backend
+/uts_frontend => uts-kepl-2026-brilian-frontend
+/uts_db => mysql:8.0.44

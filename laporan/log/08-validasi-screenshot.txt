@@ -1,0 +1,26 @@
+﻿# 2026-11-15 22:57:10
+VALIDASI OTOMATIS DIMENSI DAN UKURAN FILE
+
+
+File                  Width Height  Bytes   Ok
+----                  ----- ------  -----   --
+01-targets.png         1600    900  74722 True
+02-dashboard.png       1600    900 190987 True
+03-panel-query.png     1600    900 171343 True
+04-alert-inactive.png  1600    900  24250 True
+05-alert-firing.png    1600    900  52897 True
+06-target-down.png     1600    900  80238 True
+07-dashboard-down.png  1600    900 201456 True
+08-login-ditolak.png   1600    900 725787 True
+
+
+
+VALIDASI ISI (DOM saat pengambilan, dicek dengan Playwright):
+01-targets.png       : 5 target UP, 0 DOWN; job aplikasi/container/prometheus/server terlihat.
+02-dashboard.png     : 5 judul panel pertanyaan tampil; teks "No data" tidak ada.
+03-panel-query.png   : editor panel CPU menampilkan query sum by (name) (rate(container_cpu_usage_seconds_total{name!=""}[5m])).
+04-alert-inactive.png: LayananMati tampil, status Inactive, 0 active.
+05-alert-firing.png  : LayananMati FIRING, label severity=kritis, anotasi summary dan action terlihat.
+06-target-down.png   : target http://backend:8000/metrics berstatus DOWN.
+07-dashboard-down.png: panel status menampilkan aplikasi DOWN; teks "No data" tidak ada.
+08-login-ditolak.png : pesan "Login failed / Invalid username or password" setelah percobaan admin/admin.

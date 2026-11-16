@@ -7,3 +7,12 @@ opencode.json
 
 # Compose secrets
 .env
+
+# LaTeX build artifacts
+laporan/*.aux
+laporan/*.fdb_latexmk
+laporan/*.fls
+laporan/*.log
+laporan/*.out
+laporan/*.toc
+laporan/main.pdf

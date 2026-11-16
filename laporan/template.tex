@@ -1,0 +1,112 @@
+\documentclass[a4paper,oneside,11pt]{book}
+
+% Package yang diperlukan
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{indentfirst}
+
+% Pengaturan margin
+\geometry{
+    left=3cm,
+    right=2.5cm,
+    top=3cm,
+    bottom=3cm
+}
+
+% Pengaturan untuk kode HTML
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{htmlstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepurple},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codegreen},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=single
+}
+
+\title{Laporan Praktikum \\ Praktikum Pemrograman Web 1\\
+Pertemuan 2\\
+Dasar-dasar HTML}
+\author{Nama Mahasiswa: xxxxx(NIM)}
+\date{\today}
+
+\begin{document}
+
+% Halaman judul
+\begin{titlingpage}
+\begin{center}
+\vspace{4cm}
+\begin{huge} 
+\textbf{\thetitle} \\
+\end{huge}
+\vspace{2cm}
+\includegraphics[height=8cm]{lambang ugm.png}\\
+\begin{Large}
+\vspace{4cm}
+\theauthor\\
+Kelas A1 \\
+\end{Large}
+\begin{large}
+Dosen Pengampu: Dinar Nugroho Pratomo, S.Kom., M.IM., M.Cs.\\
+\end{large}
+\vspace{2cm}
+\thedate
+\end{center}
+\end{titlingpage}
+
+% Daftar Isi
+\tableofcontents
+\newpage
+
+\chapter{Tujuan Praktikum}
+\begin{enumerate}
+    \item Mahasiswa mampu memahami.....
+\end{enumerate}
+
+\chapter{Dasar Teori}
+\section{1}
+
+\section{2}
+\begin{lstlisting}[language=HTML, style=htmlstyle]
+\end{lstlisting}
+
+Seperti yang terlihat di gambar \ref{pic:komputer} ini adalah gambar komputer
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=2cm]{komputer.jpg}
+    \caption{Gambar Komputer}
+    \label{pic:komputer}
+\end{figure}
+
+\chapter{}
+\section{3}
+
+\chapter{Kesimpulan}
+[Tuliskan kesimpulan yang diperoleh dari praktikum ini, sesuaikan dengan tujuan praktikum]
+
+\chapter{Daftar Pustaka}
+\begin{enumerate}
+    
+\end{enumerate}
+
+\end{document}

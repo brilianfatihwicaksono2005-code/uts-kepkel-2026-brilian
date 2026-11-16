@@ -1,0 +1,11 @@
+﻿# 2026-11-15 22:56:22
+NAME                  IMAGE                              STATUS                    PORTS
+uts_backend           uts-kepl-2026-brilian-backend      Up 11 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+uts_cadvisor          gcr.io/cadvisor/cadvisor:v0.49.1   Up 30 minutes (healthy)   8080/tcp
+uts_db                mysql:8.0.44                       Up 41 minutes             0.0.0.0:3306->3306/tcp, [::]:3306->3306/tcp
+uts_docker_exporter   node:20.15.1-alpine                Up 27 minutes             9101/tcp
+uts_frontend          uts-kepl-2026-brilian-frontend     Up 41 minutes             0.0.0.0:8081->80/tcp, [::]:8081->80/tcp
+uts_grafana           grafana/grafana:11.1.0             Up 41 minutes             127.0.0.1:3000->3000/tcp
+uts_node_exporter     prom/node-exporter:v1.8.1          Up 41 minutes             9100/tcp
+uts_prometheus        prom/prometheus:v2.53.0            Up 27 minutes             127.0.0.1:9090->9090/tcp
+uts_redis             redis:7.4.4-alpine                 Up 41 minutes             6379/tcp

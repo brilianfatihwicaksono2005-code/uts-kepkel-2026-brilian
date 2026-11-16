@@ -1,0 +1,11 @@
+﻿# 2026-11-15 22:56:45
+
+job        instance             health lastScrape                     lastError scrapeUrl                          
+---        --------             ------ ----------                     --------- ---------                          
+aplikasi   backend:8000         up     2026-11-15T15:56:38.041719272Z           http://backend:8000/metrics        
+container  docker-exporter:9101 up     2026-11-15T15:56:39.021707082Z           http://docker-exporter:9101/metrics
+container  cadvisor:8080        up     2026-11-15T15:56:36.977866421Z           http://cadvisor:8080/metrics       
+prometheus localhost:9090       up     2026-11-15T15:56:41.383610722Z           http://localhost:9090/metrics      
+server     node-exporter:9100   up     2026-11-15T15:56:45.263952381Z           http://node-exporter:9100/metrics  
+
+

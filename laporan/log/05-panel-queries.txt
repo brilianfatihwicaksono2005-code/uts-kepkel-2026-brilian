@@ -1,0 +1,46 @@
+﻿# 2026-11-15 22:56:45
+QUERY: up
+SERIES: 5
+STATUS: success
+
+{"__name__":"up","instance":"cadvisor:8080","job":"container"}
+{"__name__":"up","instance":"backend:8000","job":"aplikasi"}
+{"__name__":"up","instance":"localhost:9090","job":"prometheus"}
+{"__name__":"up","instance":"node-exporter:9100","job":"server"}
+{"__name__":"up","instance":"docker-exporter:9101","job":"container"}
+QUERY: sum by (name) (rate(container_cpu_usage_seconds_total{name!=""}[5m]))
+SERIES: 9
+STATUS: success
+
+{"name":"uts_docker_exporter"}
+{"name":"uts_cadvisor"}
+{"name":"uts_node_exporter"}
+{"name":"uts_frontend"}
+{"name":"uts_grafana"}
+{"name":"uts_redis"}
+{"name":"uts_prometheus"}
+{"name":"uts_db"}
+{"name":"uts_backend"}
+QUERY: container_memory_usage_bytes{name!=""}
+SERIES: 9
+STATUS: success
+
+{"__name__":"container_memory_usage_bytes","id":"624780e0b3e6","instance":"docker-exporter:9101","job":"container","name":"uts_docker_exporter"}
+{"__name__":"container_memory_usage_bytes","id":"cc4050523a2d","instance":"docker-exporter:9101","job":"container","name":"uts_cadvisor"}
+{"__name__":"container_memory_usage_bytes","id":"1bc5df4550cd","instance":"docker-exporter:9101","job":"container","name":"uts_node_exporter"}
+{"__name__":"container_memory_usage_bytes","id":"1bf7f30df7b5","instance":"docker-exporter:9101","job":"container","name":"uts_frontend"}
+{"__name__":"container_memory_usage_bytes","id":"e50376c4082e","instance":"docker-exporter:9101","job":"container","name":"uts_grafana"}
+{"__name__":"container_memory_usage_bytes","id":"812c0fc87d3d","instance":"docker-exporter:9101","job":"container","name":"uts_redis"}
+{"__name__":"container_memory_usage_bytes","id":"aa5b5086f087","instance":"docker-exporter:9101","job":"container","name":"uts_prometheus"}
+{"__name__":"container_memory_usage_bytes","id":"c996d473a396","instance":"docker-exporter:9101","job":"container","name":"uts_db"}
+{"__name__":"container_memory_usage_bytes","id":"2563ac63361f","instance":"docker-exporter:9101","job":"container","name":"uts_backend"}
+QUERY: sum(rate(http_requests_total[5m]))
+SERIES: 1
+STATUS: success
+
+{}
+QUERY: (sum(rate(http_requests_total{status=~"5.."}[5m])) or vector(0)) / sum(rate(http_requests_total[5m]))
+SERIES: 1
+STATUS: success
+
+{}

@@ -1,0 +1,22 @@
+UJI ALARM LayananMati (nyata)
+Waktu lokal host: UTC+7
+
+2026-11-15 22:40:36  docker compose stop backend -> container uts_backend Stopped
+2026-11-15 22:40:50  expr up{job="aplikasi"} == 0 pertama kali benar (activeAt 2026-11-15T15:40:50.417696937Z)
+2026-11-15 22:41:07  polling /api/v1/alerts pertama kali melihat state=pending (t+31s)
+2026-11-15 22:42:05  evaluasi aturan terakhir: state=firing (lastEvaluation 2026-11-15T15:42:05.36820689Z)
+2026-11-15 22:42:08  polling melihat state=firing (t+92s sejak stop)
+Durasi pending -> firing: sekitar 61 detik setelah pending terlihat, sesuai for: 1m.
+Total stop -> FIRING: 92 detik.
+
+Detail alert saat firing:
+alertname=LayananMati
+state=firing
+value=0
+labels: severity=kritis
+summary: Aplikasi Hunian Pegawai tidak bisa ditarik oleh Prometheus.
+action: Jalankan `docker compose ps`, lalu `docker compose logs backend` untuk memeriksa penyebab container berhenti.
+
+Pemulihan:
+docker compose start backend -> target aplikasi kembali UP dalam 16 detik.
+Alarm kembali tidak aktif (daftar /api/v1/alerts kosong) setelah 47 detik.
